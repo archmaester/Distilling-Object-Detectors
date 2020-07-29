@@ -124,7 +124,7 @@ class pascal_voc(imdb):
         cache_file = os.path.join(self.cache_path, self.name + '_gt_roidb.pkl')
         if os.path.exists(cache_file):
             with open(cache_file, 'rb') as fid:
-                roidb = pickle.load(fid)
+                roidb = pickle.load(fid, encoding="latin1")
             print('{} gt roidb loaded from {}'.format(self.name, cache_file))
             return roidb
 
@@ -148,7 +148,7 @@ class pascal_voc(imdb):
 
         if os.path.exists(cache_file):
             with open(cache_file, 'rb') as fid:
-                roidb = pickle.load(fid)
+                roidb = pickle.load(fid, encoding="latin1")
             print('{} ss roidb loaded from {}'.format(self.name, cache_file))
             return roidb
 
@@ -180,7 +180,7 @@ class pascal_voc(imdb):
         assert os.path.exists(filename), \
             'rpn data not found at: {}'.format(filename)
         with open(filename, 'rb') as f:
-            box_list = pickle.load(f)
+            box_list = pickle.load(f, encoding="latin1")
         return self.create_roidb_from_box_list(box_list, gt_roidb)
 
     def _load_selective_search_roidb(self, gt_roidb):

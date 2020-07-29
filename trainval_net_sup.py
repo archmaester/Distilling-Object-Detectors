@@ -357,12 +357,14 @@ if __name__ == '__main__':
         data_iter = iter(dataloader)
         for step in range(iters_per_epoch):
             data = next(data_iter)
-            im_data.data.resize_(data[0].size()).copy_(data[0])
-            im_info.data.resize_(data[1].size()).copy_(data[1])
-            gt_boxes.data.resize_(data[2].size()).copy_(data[2])
-            num_boxes.data.resize_(data[3].size()).copy_(data[3])
+            with torch.no_grad():
+                im_data.data.resize_(data[0].size()).copy_(data[0])
+                im_info.data.resize_(data[1].size()).copy_(data[1])
+                gt_boxes.data.resize_(data[2].size()).copy_(data[2])
+                num_boxes.data.resize_(data[3].size()).copy_(data[3])
 
             fasterRCNN.zero_grad()
+
             rois, cls_prob, bbox_pred, \
             rpn_loss_cls, rpn_loss_box, \
             RCNN_loss_cls, RCNN_loss_bbox, \
@@ -387,14 +389,14 @@ if __name__ == '__main__':
             if step < args.warm_step and epoch == 1:
                 loss = rpn_loss_cls.mean() + rpn_loss_box.mean() \
                        + RCNN_loss_cls.mean() + RCNN_loss_bbox.mean()
-                loss_temp += loss.data[0]
+                loss_temp += loss.item()
                 sup_loss = sup_loss * 0
                 loss += sup_loss
             else:
 
                 loss = rpn_loss_cls.mean() + rpn_loss_box.mean() \
                        + RCNN_loss_cls.mean() + RCNN_loss_bbox.mean()
-                loss_temp += loss.data[0]
+                loss_temp += loss.item()
                 if args.turn_off_imitation:
                     sup_loss = sup_loss * 0
                 loss += sup_loss
@@ -416,19 +418,19 @@ if __name__ == '__main__':
                     loss_sup_temp /= args.disp_interval
 
                 if args.mGPUs:
-                    loss_rpn_cls = rpn_loss_cls.mean().data[0]
-                    loss_rpn_box = rpn_loss_box.mean().data[0]
-                    loss_rcnn_cls = RCNN_loss_cls.mean().data[0]
-                    loss_rcnn_box = RCNN_loss_bbox.mean().data[0]
-                    loss_sup = sup_loss.mean().data[0]
+                    loss_rpn_cls = rpn_loss_cls.mean().item()
+                    loss_rpn_box = rpn_loss_box.mean().item()
+                    loss_rcnn_cls = RCNN_loss_cls.mean().item()
+                    loss_rcnn_box = RCNN_loss_bbox.mean().item()
+                    loss_sup = sup_loss.mean().item()
                     fg_cnt = torch.sum(rois_label.data.ne(0))
                     bg_cnt = rois_label.data.numel() - fg_cnt
                 else:
-                    loss_rpn_cls = rpn_loss_cls.data[0]
-                    loss_rpn_box = rpn_loss_box.data[0]
-                    loss_rcnn_cls = RCNN_loss_cls.data[0]
-                    loss_rcnn_box = RCNN_loss_bbox.data[0]
-                    loss_sup = sup_loss.data[0]
+                    loss_rpn_cls = rpn_loss_cls.item()
+                    loss_rpn_box = rpn_loss_box.item()
+                    loss_rcnn_cls = RCNN_loss_cls.item()
+                    loss_rcnn_box = RCNN_loss_bbox.item()
+                    loss_sup = sup_loss.item()
                     fg_cnt = torch.sum(rois_label.data.ne(0))
                     bg_cnt = rois_label.data.numel() - fg_cnt
 
